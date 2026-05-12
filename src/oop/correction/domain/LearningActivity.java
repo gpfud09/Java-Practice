@@ -2,6 +2,10 @@ package oop.correction.domain;
 
 import oop.correction.exception.InvalidActivityException;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 public abstract class LearningActivity {
 
     private static int totalCreateCount = 0;
@@ -11,10 +15,7 @@ public abstract class LearningActivity {
     private int minutes;
     private Visibility visibility;
     private final ActivityCategory category;
-
-//    public LearningActivity(String title, int minutes) {
-//        this(title, minutes, Visibility.PUBLIC);
-//    }
+    private final Set<String> tags = new HashSet<>();
 
     public LearningActivity(String title, int minutes, Visibility visibility, ActivityCategory category) {
         validateTitle(title);
@@ -25,6 +26,28 @@ public abstract class LearningActivity {
         this.minutes = minutes;
         this.visibility = visibility;
         this.category = category;
+    }
+
+    /**
+     * 태그를 추가한다. 공백은 제거하고, 소문자로 저장한다.
+     * 중복 태그는 무시한다(Set의 특성)
+     */
+    public void addTag(String tag) {
+        if (tag == null || tag.isBlank()) {
+            throw new InvalidActivityException("태그는 비워둘 수 없습니다.");
+        }
+        tags.add(tag.trim().toLowerCase());
+    }
+
+    /** 등록된 태그 목록을 읽기 전용으로 반환한다.*/
+    public Set<String> getTags() {
+        return Collections.unmodifiableSet(tags);
+    }
+
+    /** 해당 태그가 등록되어 있는지 확인한다. */
+    public boolean hasTag(String tag) {
+        if (tag == null) return false;
+        return tags.contains(tag.trim().toLowerCase());
     }
 
     public static int getTotalCreatedCount() {

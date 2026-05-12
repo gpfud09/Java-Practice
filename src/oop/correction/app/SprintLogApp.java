@@ -5,66 +5,125 @@ import oop.correction.printer.ActivityPrinter;
 import oop.correction.printer.ConsoleActivityPrinter;
 import oop.correction.service.ActivityDashboard;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 public class SprintLogApp {
 
     public static void main(String[] args) {
 
-        // ── 1. 기본 활동 목록 ──────────────────────────────────────────
-        // boolean 대신 Visibility enum으로 공개 상태를 표현한다.
-        LearningActivity[] activities = {
-                new LectureLog("Java enum 기초", 50, Visibility.PUBLIC, "박코치"),
-                new LectureLog("Java 내부클래스", 70, Visibility.PUBLIC, "김선생"),
-                new PracticeLog("예외 처리 실습", 80, Visibility.PUBLIC, 90),
-                new PracticeLog("인터페이스 실습", 100, Visibility.PUBLIC, 85),
-                new ReadingLog("객체지향의 사실과 오해", 35, Visibility.PRIVATE, "조영호")
-        };
+        // ── 1. 활동 목록 구성 ─────────────────────────────────────────
+        // 달라진 점: ActivityDashboard가 이제 이 List를 직접 받는다.
+        List<LearningActivity> activities = new ArrayList<>();
 
-        ActivityPrinter printer = new ConsoleActivityPrinter();
-        System.out.println("=== 학습 활동 목록 ===");
-        for (LearningActivity activity : activities) {
-            printer.print(activity);
+        LearningActivity lecture = new LectureLog(
+                "Java 컬렉션 프레임워크 이론", 50, Visibility.PUBLIC, "박코치");
+        LearningActivity lecture2 = new LectureLog(
+                "Java 내부 클래스 활용", 70, Visibility.PUBLIC, "김코치");
+        LearningActivity practice1 = new PracticeLog(
+                "ArrayList 실습", 80, Visibility.PUBLIC, 90);
+        LearningActivity reading = new ReadingLog(
+                "Effective Java 3판", 35, Visibility.PRIVATE, "조슈아 블로크");
+        LearningActivity practice2 = new PracticeLog(
+                "LinkedList 비교 실습", 40, Visibility.PRIVATE, 75);
+        LearningActivity practice3 = new PracticeLog(
+                "HashMap 비교 실습", 30, Visibility.PRIVATE, 65);
+
+        activities.add(lecture);
+        activities.add(lecture2);
+        activities.add(practice1);
+        activities.add(reading);
+        activities.add(practice2);
+        activities.add(practice3);
+
+        // ── 2. 태그 부착 ──────────────────────────────────────────────
+        // 태그는 Set<String>으로 관리되므로 중복은 자동으로 무시된다.
+        System.out.println("=== 태그 부착 ===");
+        lecture.addTag("이론");
+        lecture.addTag("JCF");
+        lecture2.addTag("추가");
+        lecture2.addTag("이론");
+        practice1.addTag("실습");
+        practice1.addTag("JCF");
+        practice2.addTag("실습");
+        reading.addTag("이론");
+        reading.addTag("도서");
+        practice3.addTag("추가");
+        practice3.addTag("실습");
+
+
+        // 같은 태그를 두 번 추가해도 Set이므로 한 번만 들어간다
+        lecture.addTag("JCF");  // 이미 있으면 무시됨
+        System.out.println("lecture 태그: " + lecture.getTags());
+        System.out.println("reading 태그: " + reading.getTags());
+
+        // ── 3. ActivityDashboard — 이제 List를 받는다 ─────────────────
+        // 기존: new ActivityDashboard(배열)  →  new ActivityDashboard(List)
+        System.out.println();
+        System.out.println("=== ActivityDashboard(List) 생성 ===");
+        ActivityDashboard dashboard = new ActivityDashboard(activities);
+
+        ActivityDashboard.Summary summary = dashboard.summarize();
+        System.out.println("총 활동: " + summary.getTotalCount()
+                + "개 (강의 " + summary.getLectureCount()
+                + " / 실습 " + summary.getPracticeCount()
+                + " / 독서 " + summary.getReadingCount() + ")");
+
+        // ── 4. groupByCategory() — 카테고리별 그룹화 ─────────────────
+        // Map<ActivityCategory, List<LearningActivity>> 반환
+        System.out.println();
+        System.out.println("=== 카테고리별 그룹화 ===");
+        Map<ActivityCategory, List<LearningActivity>> grouped = dashboard.groupByCategory();
+
+        for (ActivityCategory cat : ActivityCategory.values()) {
+            List<LearningActivity> group = grouped.get(cat);
+            if (group == null) {
+                System.out.println(cat.getLabel() + ": 없음");
+            } else {
+                System.out.println(cat.getLabel() + ": " + group.size() + "개");
+                for (LearningActivity a : group) {
+                    System.out.println("  - " + a.getTitle() + " (" + a.getMinutes() + "분)");
+                }
+            }
         }
 
-        // ── 2. 정적 중첩 클래스 시연: Summary ──────────────────────────────────────────
-        //Summary는 ActivityDashboard 객체 없이도 생성이 가능하지만, Summary가 의미있는 활성 객체 수 를 가지게 하기 위해
-        // dashboard.summarize()를 호출해서 리턴받음.
-        ActivityDashboard dashboard = new ActivityDashboard(activities);
-        ActivityDashboard.Summary summary = dashboard.summarize();
-
-        System.out.println("=== 학습 요약 (정적 중첩 클래스: Summary) ===");
-        System.out.println("총 활동 수  : " + summary.getTotalCount());
-        System.out.println("강의        : " + summary.getLectureCount());
-        System.out.println("실습        : " + summary.getPracticeCount());
-        System.out.println("독서        : " + summary.getReadingCount());
-
-
-        // ── 3. 멤버 내부 클래스 시연: ReportBuilder ──────────────────────
-        // dashboard.new ReportBuilder(...) — 외부 인스턴스에 묶여서 생성된다.
+        // ── 5. filterByTag() — 태그로 필터링 ─────────────────────────
+        // 이 패턴으로 조건부 필터링이 가능하다.
         System.out.println();
-        System.out.println("=== 기본 보고서 (멤버 내부 클래스: ReportBuilder) ===");
-        ActivityPrinter consolePrinter = new ConsoleActivityPrinter();
-        dashboard.new ReportBuilder(consolePrinter).print();
+        System.out.println("=== 태그 필터링: 'JCF' ===");
+        List<LearningActivity> jcfActivities = dashboard.filterByTag("JCF");
+        System.out.println("'JCF' 태그 활동 수: " + jcfActivities.size());
+        for (LearningActivity a : jcfActivities) {
+            System.out.println("  - " + a.getTitle());
+        }
 
-
-        // ── 4. 익명 클래스 시연: ActivityPrinter 구현체 즉석 구현 ──────────────────────
-        // 클래스 이름 없이 인터페이스를 바로 구현한다.
-        // 딱 한번만 쓸 간단한 출력 방식을 별도 클래스 파일 없이 표현한다.
         System.out.println();
-        System.out.println("=== 간단 보고서 (익명 클래스 시연: ActivityPrinter 구현체 즉석 구현 ! ===");
+        System.out.println("=== 태그 필터링: '실습' ===");
+        List<LearningActivity> practiceTagged = dashboard.filterByTag("실습");
+        System.out.println("'실습' 태그 활동 수: " + practiceTagged.size());
+        for (LearningActivity a : practiceTagged) {
+            System.out.println("  - " + a.getTitle());
+        }
 
-        ActivityPrinter compactPrinter = new ActivityPrinter() {
-            @Override
-            public void print(LearningActivity activity) {
-                // 익명 클래스 안에서 activity의 public API를 자유롭게 사용한다.
-                // printf: 서식 지정 표준 출력 함수
-                // %s: String, %d: 정수, %f: 실수, %n: 줄 개행
-                System.out.printf("  [%s] %s — %d분%n",
-                        activity.getActivityType(),
-                        activity.getTitle(),
-                        activity.getMinutes());
-            }
-        };
-        dashboard.new ReportBuilder(compactPrinter).print();
+        System.out.println();
+        System.out.println("=== 태그 필터링: '추가' ===");
+        List<LearningActivity> addTagged = dashboard.filterByTag("추가");
+        System.out.println("'추가' 태그 활동 수: " + addTagged.size());
+        for (LearningActivity a : addTagged) {
+            System.out.println("  - " + a.getTitle());
+        }
+
+        // ── 6. ReportBuilder — 기존 API 그대로 동작 ──────────────────
+        // 예전부터 있던 ReportBuilder는 인터페이스가 변하지 않았다.
+        // ActivityDashboard 내부가 배열 → List로 바뀌어도 외부에서는 차이가 없다.
+        System.out.println();
+        System.out.println("=== ReportBuilder (기존 API 유지) ===");
+        ActivityPrinter printer = new ConsoleActivityPrinter();
+        dashboard.new ReportBuilder(printer).print();
+
+        System.out.println();
+        System.out.println("총 생성된 활동 수: " + LearningActivity.getTotalCreatedCount());
 
     }
 

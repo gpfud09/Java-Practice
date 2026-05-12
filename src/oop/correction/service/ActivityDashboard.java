@@ -1,18 +1,27 @@
 package oop.correction.service;
 
+import oop.correction.domain.ActivityCategory;
 import oop.correction.domain.LearningActivity;
 import oop.correction.printer.ActivityPrinter;
 
+import java.util.*;
+
 public class ActivityDashboard {
 
-    private final LearningActivity[] activities;
+    private final List<LearningActivity> activities;
 
-    public ActivityDashboard(LearningActivity[] activities) {
+    public ActivityDashboard(List<LearningActivity> activities) {
+        if (activities == null) {
+            throw new IllegalArgumentException("학습 활동은 null일 수 없습니다.");
+        }
         this.activities = activities;
     }
 
+    /*
+        카테고리별 활동 수를 세어 Summary를 만들자.
+     */
     public Summary summarize() {
-        // 로컬 클래스 선언
+        // 로컬 클래스 선언: summarize()   ㅏㄲ에서는 사용할 수 없다.
         class Counter {
             private int totalCount;
             private int lectureCount;
@@ -40,7 +49,7 @@ public class ActivityDashboard {
         }
         return counter.toSummary();
 
-    }
+    } // end summarize()
 
     // 내부 클래스에 static을 붙이는 이유는 메모리 누수를 방지하고 독립성을 가지기 위해서이다.
     public static class Summary {
@@ -102,6 +111,40 @@ public class ActivityDashboard {
                 printer.print(activity);
             }
         }
+
+    }
+
+    // 카테고리별 그룹화 -------------------------------------------------
+    // 카테고리별로 활동(Log)을 그룹화해서 Map으로 반환한다.
+    public Map<ActivityCategory, List<LearningActivity>> groupByCategory() {
+        Map<ActivityCategory, List<LearningActivity>> result = new HashMap<>();
+        for (LearningActivity activity : activities) {
+            ActivityCategory cat = activity.getCategory();
+
+            // 해당 카테고리가 Map에 없으면 빈 리스트를 먼저 만들어서 put한다.
+            if (!result.containsKey(cat)) {
+                result.put(cat, new ArrayList<>());
+            }
+
+            // 카테고리별 리스트를 얻어온 후 리스트에 활동 객체를 add 하자.
+//            List<LearningActivity> list = result.get(cat);
+//            list.add(activity);
+            result.get(cat).add(activity);
+        }
+        return result;
+
+    }
+
+    // 태그 필터링 ------------------------------------------------------
+    public List<LearningActivity> filterByTag(String tag) {
+
+        List<LearningActivity> result = new ArrayList<>();
+        for (LearningActivity activity : activities) {
+            if (activity.hasTag(tag)) {
+                result.add(activity);
+            }
+        }
+        return Collections.unmodifiableList(result);
 
     }
 
