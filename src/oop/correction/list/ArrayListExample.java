@@ -1,4 +1,4 @@
-package oop.correction;
+package oop.correction.list;
 
 import java.util.ArrayList;
 import java.util.Arrays;
