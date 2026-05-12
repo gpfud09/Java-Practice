@@ -5,6 +5,8 @@ import oop.inner_anonymous.policy.Shareable;
 
 public class PracticeLog extends LearningActivity implements Reviewable, Shareable {
 
+    private static final int MINIMUM_COMPLETION_RATE = 70;
+
     private int completionRate; // PracticeLog만 가지는 고유한 필드
 
     public PracticeLog(String title, int minutes, Visibility visibility, int completionRate) {
@@ -12,9 +14,10 @@ public class PracticeLog extends LearningActivity implements Reviewable, Shareab
         this.completionRate = normalizeCompletionRate(completionRate);
     }
 
+
     @Override
     public boolean needsReview() {
-        return getCategory().isShortStudy(getMinutes()) || completionRate < 70;
+        return getCategory().isShortStudy(getMinutes()) || completionRate < MINIMUM_COMPLETION_RATE;
     }
 
     @Override
@@ -27,11 +30,11 @@ public class PracticeLog extends LearningActivity implements Reviewable, Shareab
     }
 
     private int normalizeCompletionRate(int completionRate) {
-        if(completionRate < 0) {
+        if (completionRate < 0) {
             return 0;
         }
 
-        if(completionRate > 100) {
+        if (completionRate > 100) {
             return 100;
         }
 
@@ -58,3 +61,7 @@ public class PracticeLog extends LearningActivity implements Reviewable, Shareab
         return "완료율: " + completionRate + "%";
     }
 }
+
+
+
+

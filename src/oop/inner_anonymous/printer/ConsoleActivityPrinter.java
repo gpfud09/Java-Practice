@@ -1,6 +1,6 @@
-package oop.inner_anonymous.domain;
+package oop.inner_anonymous.printer;
 
-import oop.inner_anonymous.printer.ActivityPrinter;
+import oop.inner_anonymous.domain.LearningActivity;
 
 public class ConsoleActivityPrinter implements ActivityPrinter {
 
@@ -12,7 +12,7 @@ public class ConsoleActivityPrinter implements ActivityPrinter {
                         + " " + activity.getTitle()
                         + " - " + activity.getMinutes() + "분"
                         + " - " + activity.getDetailText()
-                        + " - " + activity.getVisibilityText() + " 🐳"
+                        + " - " + activity.getVisibilityText() + " 🙉"
         );
     }
 

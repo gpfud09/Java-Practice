@@ -9,7 +9,7 @@ public class CompactActivityPrinter implements ActivityPrinter {
         System.out.println(
                 activity.getActivityType()
                         + " | " + activity.getTitle()
-                        + " (" + activity.getMinutes() + "분) 🐰"
+                        + " (" + activity.getMinutes() + "분)"
         );
     }
 

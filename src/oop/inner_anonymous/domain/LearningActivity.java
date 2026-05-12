@@ -12,11 +12,11 @@ public abstract class LearningActivity {
     private Visibility visibility;
     private final ActivityCategory category;
 
-//    LearningActivity(String title, int minutes) {
+//    public LearningActivity(String title, int minutes) {
 //        this(title, minutes, Visibility.PUBLIC);
 //    }
 
-    LearningActivity(String title, int minutes, Visibility visibility, ActivityCategory category) {
+    public LearningActivity(String title, int minutes, Visibility visibility, ActivityCategory category) {
         validateTitle(title);
         validateMinutes(minutes);
         totalCreateCount++;
@@ -32,27 +32,28 @@ public abstract class LearningActivity {
     }
 
     public void extendStudy(int additionalMinutes) {
-        if(additionalMinutes <= 0) {
-            throw new InvalidActivityException
-                    ("추가 학습 시간은 1분 이상이어야 합니다." + additionalMinutes);
+        if (additionalMinutes <= 0) {
+            throw new InvalidActivityException(
+                    "추가 학습 시간은 1분 이상이어야 합니다. 입력값: " + additionalMinutes);
         }
+
         this.minutes += additionalMinutes;
     }
-    
+
     public void changeTitle(String newTitle) {
         validateTitle(newTitle);
         this.title = newTitle;
     }
 
     private void validateTitle(String newTitle) {
-        if(newTitle == null || newTitle.isBlank()) {
+        if (newTitle == null || newTitle.isBlank()) {
             throw new InvalidActivityException("학습 제목은 비워둘 수 없습니다.");
         }
     }
 
     private void validateMinutes(int newMinutes) {
         if (newMinutes <= 0) {
-            throw new InvalidActivityException("학습 시간은 1분 이상이어야 합니다. 입력값: " + newMinutes);
+            throw new InvalidActivityException("학습 시간은 1분 이상이여야 합니다. 입력값: " + newMinutes);
         }
     }
 
@@ -64,8 +65,9 @@ public abstract class LearningActivity {
         this.visibility = Visibility.PRIVATE;
     }
 
+
     public abstract String getActivityType(); // 강의, 실습, 독서
-    public abstract String getDetailText();
+    public abstract String getDetailText(); // 유형별 세부 정보
 
     public static int getTotalCreateCount() {
         return totalCreateCount;
@@ -91,7 +93,7 @@ public abstract class LearningActivity {
         return this.visibility.getLabel();
     }
 
-    public  boolean isPublicActivity() {
+    public boolean isPublicActivity() {
         return this.visibility == Visibility.PUBLIC;
     }
 
